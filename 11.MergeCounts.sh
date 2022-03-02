@@ -40,25 +40,22 @@ echo "Running stage 12. Merging Read Counts"
 Rscript --vanilla ${CODE_DIRECTORY}11.MergeCounts.R
 
 ## Now we want to delete BAMS to save memory!
-SAMPLE_NAME=$(cat ${KEY} | tail -n+${SGE_TASK_ID} | head -1 | cut -f1 )
-echo ${SAMPLE_NAME}
-
-# move to sample directory
-DIR_SAMPLE_NAME=${MAPPING_DIR}${SAMPLE_NAME}
-
 ## Remove large mapped bam and star files
-## Leave the unmapped reads for further analysis 
-cd ${DIR_SAMPLE_NAME}
-rm *.bam*
-rm -r *STARgenome 
-rm *out 
-rm *tab
-## Compress the unmapped reads! 
-gzip * 
-
+## Leave the unmapped reads for further analysis (but compress to make it easier).  
+cd ${MAPPING_DIR}
+## Compress the unmapped reads!
+for f in */; 
+do 
+	echo ${f}
+	gzip ${f}*Unmapped*
+	rm ${f}*tab
+	rm ${f}*out
+	rm ${f}*.bam*
+	rm -r ${f}*STARgenome
+done 
 ## Remove the trimmed fastq file 
 cd ${MAPPING_DIR}AdapterTrimmed
-rm ${SAMPLE_NAME}*_trimmed.fq.gz
+rm *_trimmed.fq.gz
 
 
 # Done 
